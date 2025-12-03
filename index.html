@@ -12,7 +12,6 @@
         padding: 0;
     }
 
-    /* HEADER */
     .header {
         background: #1b3c73;
         color: white;
@@ -23,7 +22,6 @@
         box-shadow: 0 3px 8px rgba(0,0,0,0.2);
     }
 
-    /* GRID LAYOUT */
     .grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -31,7 +29,6 @@
         padding: 20px;
     }
 
-    /* SENSOR CARD */
     .sensor-box {
         background: white;
         padding: 20px;
@@ -41,30 +38,25 @@
         transition: 0.3s;
     }
 
-    /* SAFE */
     .safe {
         border-left: 12px solid #2ecc71;
     }
 
-    /* DANGER */
     .danger {
         border-left: 12px solid #e74c3c;
         animation: blink 1.1s infinite;
     }
 
-    /* ALERT BLINK */
     @keyframes blink {
         50% { background-color: #ffe6e6; }
     }
 
-    /* STATUS TEXT */
     .status {
         font-weight: bold;
         display: block;
         margin-top: 10px;
     }
 
-    /* ICON BESAR */
     .icon {
         font-size: 40px;
     }
@@ -80,10 +72,8 @@
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="header">🔥📡🚪 Dashboard Monitoring Sensor Raspberry Pi</div>
 
-<!-- Waktu -->
 <div class="time-box">
     Terakhir Update: <span id="time">-</span>
 </div>
@@ -101,19 +91,14 @@
         <span id="vibration" class="status"></span>
     </div>
 
-    <div id="box_mag1" class="sensor-box safe">
-        <span class="icon">🚪</span> Door Sensor 1
-        <span id="mag1" class="status"></span>
+    <div id="box_door" class="sensor-box safe">
+        <span class="icon">🚪</span> Door Sensor
+        <span id="door" class="status"></span>
     </div>
 
-    <div id="box_mag2" class="sensor-box safe">
-        <span class="icon">🚪</span> Door Sensor 2
-        <span id="mag2" class="status"></span>
-    </div>
-
-    <div id="box_buzzer" class="sensor-box safe">
-        <span class="icon">🔔</span> Buzzer Status
-        <span id="buzzer" class="status"></span>
+    <div id="box_window" class="sensor-box safe">
+        <span class="icon">🪟</span> Window Sensor
+        <span id="window" class="status"></span>
     </div>
 
 </div>
@@ -121,62 +106,47 @@
 
 <script>
 function updateSensor() {
-    fetch("http://YOUR_PI_IP:5000/sensor")   // Ganti dengan IP Raspberry Pi
+    fetch("http://YOUR_PI_IP:5000/sensor")   // ganti sesuai IP Raspberry
         .then(res => res.json())
         .then(data => {
 
-            let timeNow = new Date().toLocaleTimeString();
-            document.getElementById("time").innerHTML = timeNow;
+            document.getElementById("time").innerHTML = 
+                new Date().toLocaleTimeString();
 
-            // ========= FLAME SENSOR =========
+            // === Flame Sensor ===
             if (data.fire === 1) {
                 setSafe("box_fire", "fire", "Tidak Ada Api");
             } else {
                 setDanger("box_fire", "fire", "🔥 TERDETEKSI API!");
             }
 
-            // ========= VIBRATION SENSOR =========
+            // === Vibration ===
             if (data.vibration === 1) {
                 setSafe("box_vibration", "vibration", "Tidak Ada Getaran");
             } else {
                 setDanger("box_vibration", "vibration", "📡 GETARAN TERDETEKSI!");
             }
 
-            // ========= MAGNET 1 =========
+            // === DOOR ===
             if (data.mag1 === 0) {
-                setSafe("box_mag1", "mag1", "Pintu 1 Tertutup");
+                setSafe("box_door", "door", "Pintu Tertutup");
             } else {
-                setDanger("box_mag1", "mag1", "🚨 Pintu 1 Terbuka!");
+                setDanger("box_door", "door", "🚨 Pintu Terbuka!");
             }
 
-            // ========= MAGNET 2 =========
+            // === WINDOW ===
             if (data.mag2 === 0) {
-                setSafe("box_mag2", "mag2", "Pintu 2 Tertutup");
+                setSafe("box_window", "window", "Jendela Tertutup");
             } else {
-                setDanger("box_mag2", "mag2", "🚨 Pintu 2 Terbuka!");
+                setDanger("box_window", "window", "🚨 Jendela Terbuka!");
             }
 
-            // ========= BUZZER =========
-            if (data.alert) {
-                setDanger("box_buzzer", "buzzer", "🔔 Buzzer Menyala");
-            } else {
-                setSafe("box_buzzer", "buzzer", "🔕 Buzzer Mati");
-            }
+            // NOTE:
+            // Buzzer TIDAK ditampilkan di UI,
+            // tapi backend tetap mengirim data.alert
+            // sehingga Raspberry Pi tetap bisa hidupkan buzzer.
         });
 }
 
 function setSafe(box, textId, text) {
-    document.getElementById(box).className = "sensor-box safe";
-    document.getElementById(textId).innerHTML = text;
-}
-
-function setDanger(box, textId, text) {
-    document.getElementById(box).className = "sensor-box danger";
-    document.getElementById(textId).innerHTML = text;
-}
-
-setInterval(updateSensor, 1000);
-</script>
-
-</body>
-</html>
+    document.
