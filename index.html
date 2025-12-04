@@ -38,7 +38,7 @@
 <script>
 async function updateSensor() {
     try {
-        let r = await fetch("http://IP_RASPBERRY:5000/sensor");
+        let r = await fetch("http://10.72.2.216:5000/sensor");
         let data = await r.json();
 
         document.getElementById("fireBox").innerText =
