@@ -1,110 +1,91 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Monitoring Sensor</title>
-
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f1f1f1;
-        padding: 20px;
-        text-align: center;
-    }
-
-    h1 {
-        margin-bottom: 25px;
-    }
-
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-        max-width: 600px;
-        margin: auto;
-    }
-
-    .card {
-        background: white;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        font-size: 18px;
-        height: 150px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-
-    .status {
-        font-size: 22px;
-        font-weight: bold;
-        margin-top: 10px;
-    }
-
-    .ok {
-        color: green;
-    }
-
-    .alert {
-        color: red;
-    }
-</style>
-
+    <title>Raspberry Pi Sensor Dashboard</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f2f2f2;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 6px #ccc;
+        }
+        .alert { color: red; font-weight: bold; }
+        .safe { color: green; }
+    </style>
 </head>
 <body>
 
-<h1>Monitoring Sensor Raspberry Pi</h1>
+<h2>🔥 Raspberry Pi Real-Time Sensor Monitoring</h2>
 
-<div class="grid">
+<div class="card">
+    <p>Fire Sensor: <span id="fire"></span></p>
+</div>
 
-    <!-- FIRE -->
-    <div class="card">
-        <div>🔥 Fire Sensor</div>
-        <div id="fire" class="status ok">NO FIRE</div>
-    </div>
+<div class="card">
+    <p>Vibration Sensor: <span id="vib"></span></p>
+</div>
 
-    <!-- VIBRATION -->
-    <div class="card">
-        <div>📳 Vibration Sensor</div>
-        <div id="vib" class="status ok">NO VIBRATION</div>
-    </div>
+<div class="card">
+    <p>Door 1: <span id="door1"></span>
+        (Mute: <span id="mute1"></span>)
+    </p>
+</div>
 
-    <!-- DOOR -->
-    <div class="card">
-        <div>🚪 Door Sensor</div>
-        <div id="door" class="status ok">LOCKED</div>
-    </div>
+<div class="card">
+    <p>Door 2: <span id="door2"></span>
+        (Mute: <span id="mute2"></span>)
+    </p>
+</div>
 
-    <!-- WINDOW -->
-    <div class="card">
-        <div>🪟 Window Sensor</div>
-        <div id="window" class="status ok">CLOSED</div>
-    </div>
-
+<div class="card">
+    <p>Buzzer Alarm: <span id="alarm"></span></p>
 </div>
 
 <script>
-    // Nanti bisa diganti AJAX → ambil data dari Raspberry Pi
-    // Demo update untuk testing UI
-    setInterval(() => {
-        // Contoh update random
-        let fireStatus = Math.random() > 0.8;
-        let vibStatus = Math.random() > 0.8;
-        let doorStatus = Math.random() > 0.8;
-        let windowStatus = Math.random() > 0.8;
+async function updateData() {
+    try {
+        const res = await fetch("http://YOUR_PI_IP_HERE:5000/sensor");
+        const data = await res.json();
 
-        update("fire", fireStatus ? "🔥 FIRE DETECTED" : "NO FIRE", fireStatus);
-        update("vib",  vibStatus ? "VIBRATION DETECTED" : "NO VIBRATION", vibStatus);
-        update("door", doorStatus ? "UNLOCKED" : "LOCKED", doorStatus);
-        update("window", windowStatus ? "OPEN" : "CLOSED", windowStatus);
-    }, 2000);
+        document.getElementById("fire").innerHTML =
+            data.fire ? "<span class='safe'>No Fire</span>" :
+                        "<span class='alert'>FIRE ALERT</span>";
 
-    function update(id, text, alert) {
-        let x = document.getElementById(id);
-        x.innerHTML = text;
-        x.className = "status " + (alert ? "alert" : "ok");
+        document.getElementById("vib").innerHTML =
+            data.vibration ? "<span class='safe'>No Vibration</span>" :
+                             "<span class='alert'>VIBRATION ALERT</span>";
+
+        document.getElementById("door1").innerHTML =
+            data.door1 ? "<span class='alert'>OPEN</span>" :
+                         "<span class='safe'>Closed</span>";
+
+        document.getElementById("door2").innerHTML =
+            data.door2 ? "<span class='alert'>OPEN</span>" :
+                         "<span class='safe'>Closed</span>";
+
+        document.getElementById("mute1").innerHTML =
+            data.mute1 ? "ON" : "OFF";
+
+        document.getElementById("mute2").innerHTML =
+            data.mute2 ? "ON" : "OFF";
+
+        document.getElementById("alarm").innerHTML =
+            data.alarm ? "<span class='alert'>ACTIVE</span>" :
+                         "<span class='safe'>OFF</span>";
+
+    } catch (err) {
+        console.log("Connection Error", err);
     }
+}
+
+setInterval(updateData, 1000);
+updateData();
 </script>
 
 </body>
